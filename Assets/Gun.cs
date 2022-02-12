@@ -40,8 +40,14 @@ public class Gun : MonoBehaviour
 
     private void MyInput()
     {
-        if(allowButtonHold) shooting = Input.GetKey(KeyCode.Mouse0);
-        shooting = Input.GetKeyDown(KeyCode.Mouse0);
+        if(allowButtonHold)
+        {
+            shooting = Input.GetKey(KeyCode.Mouse0);
+        }
+        else
+        {
+            shooting = Input.GetKeyDown(KeyCode.Mouse0);
+        }
 
         // Reload
         if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading) Reload();
