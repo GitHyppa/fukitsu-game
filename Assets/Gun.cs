@@ -9,7 +9,8 @@ public class Gun : MonoBehaviour
     public float range = 100f;
     public float fireRate = 15f;
     public float impactForce = 30f;
-    public float currentAmmo = 30f;
+    public float maxAmmo = 30f;
+    public float currentAmmo;
     float timeLeft = 2f;
 
     public Canvas canvas;
@@ -24,6 +25,7 @@ public class Gun : MonoBehaviour
 
     void Start()
     {
+        currentAmmo = maxAmmo;
         Text_AmmoCount = canvas.GetComponent<UIController>().Text_AmmoCount;
         Text_Reloading = canvas.GetComponent<UIController>().Text_Reloading;
 
@@ -42,9 +44,11 @@ public class Gun : MonoBehaviour
 
         if(Input.GetKeyDown("r"))
         {
-            Text_Reloading.enabled = true;
-            timeLeft = 2f;
-            Debug.Log("123");
+            if(currentAmmo < maxAmmo && Text_Reloading.enabled == false)
+            {
+                Text_Reloading.enabled = true;
+                timeLeft = 2f;
+            }
         }
 
         if(Text_Reloading.enabled)
@@ -53,7 +57,7 @@ public class Gun : MonoBehaviour
             {
                 Text_Reloading.enabled = false;  
                 currentAmmo = 30f;
-                Text_Reloading.text = currentAmmo + " / 30";
+                Text_AmmoCount.text = currentAmmo + " / 30";
             } 
             else
             {
@@ -64,7 +68,7 @@ public class Gun : MonoBehaviour
 
     void Shoot()
     {
-        if (currentAmmo > 0)
+        if (currentAmmo > 0 && Text_Reloading.enabled == false)
         {
             muzzleFlash.Play();
             RaycastHit hit;
