@@ -47,7 +47,7 @@ public class Gun : MonoBehaviour
         {
             if (timeLeft < 0)
             {
-                reloading.enabled = false;
+                reloading.enabled = false;  
                 currentAmmo = 30f;
                 ammoCount.text = currentAmmo + " / 30";
             } 
