@@ -5,97 +5,107 @@ using UnityEngine.UI;
 
 public class Gun : MonoBehaviour
 {
-    public float damage = 10f;
-    public float range = 100f;
-    public float fireRate = 15f;
-    public float impactForce = 30f;
-    public float maxAmmo = 30f;
-    public float currentAmmo;
-    float timeLeft = 2f;
+    // Gun stats
+    public int damage;
+    public float timeBetweenShooting, spread, range, reloadTime, timeBetweenShots;
+    public int magazineSize, bulletsPerTap;
+    public bool allowButtonHold;
+    int bulletsLeft, bulletsShot;
 
-    public Canvas canvas;
+    // Booleans
+    bool shooting, readyToShoot, reloading;
+
+    // Reference
     public Camera fpsCam;
-    public ParticleSystem muzzleFlash;
-    public GameObject impactEffect;
-    public GameObject bloodEffect;
+    public Transform attackPoint;
+    public RaycastHit rayHit;
+    public LayerMask whatIsEnemy;
+    public Canvas canvas;
     Text Text_AmmoCount;
     Text Text_Reloading;
 
-    private float NextTimeToFire = 0f;
-
-    void Start()
+    private void Awake()
     {
-        currentAmmo = maxAmmo;
+        bulletsLeft = magazineSize;
+        readyToShoot = true;
         Text_AmmoCount = canvas.GetComponent<UIController>().Text_AmmoCount;
         Text_Reloading = canvas.GetComponent<UIController>().Text_Reloading;
-
-        Text_AmmoCount.text = "30 / 30";
         Text_Reloading.enabled = false;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if(Input.GetButton("Fire1") && Time.time >= NextTimeToFire)
-        {
-            NextTimeToFire = Time.time + 1f / fireRate;
-            Shoot();
-        }
-
-        if(Input.GetKeyDown("r"))
-        {
-            if(currentAmmo < maxAmmo && Text_Reloading.enabled == false)
-            {
-                Text_Reloading.enabled = true;
-                timeLeft = 2f;
-            }
-        }
-
-        if(Text_Reloading.enabled)
-        {
-            if (timeLeft < 0)
-            {
-                Text_Reloading.enabled = false;  
-                currentAmmo = 30f;
-                Text_AmmoCount.text = currentAmmo + " / 30";
-            } 
-            else
-            {
-                timeLeft -= Time.deltaTime;
-            }
-        }
+        MyInput();
     }
 
-    void Shoot()
+    private void MyInput()
     {
-        if (currentAmmo > 0 && Text_Reloading.enabled == false)
+        if(allowButtonHold) shooting = Input.GetKey(KeyCode.Mouse0);
+        shooting = Input.GetKeyDown(KeyCode.Mouse0);
+
+        // Reload
+        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading) Reload();
+
+        // Shoot
+        if (readyToShoot && shooting && !reloading && bulletsLeft > 0)
         {
-            muzzleFlash.Play();
-            RaycastHit hit;
+            bulletsShot = bulletsPerTap;
+            Shoot();
+        } 
+    }
 
-            currentAmmo = currentAmmo - 1f;
-            Text_AmmoCount.text = currentAmmo + " / 30";
+    private void Shoot()
+    {
+        readyToShoot = false;
 
-            if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
+        // TODO: if player is moving, spread * 1.5
+        // Spread
+        float x = Random.Range(-spread, spread);
+        float y = Random.Range(-spread, spread);
+
+        // Calculate Direction with Spread
+        Vector3 direction = fpsCam.transform.forward + new Vector3(x, y, 0);
+
+        // Raycast
+        if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out rayHit, range, whatIsEnemy))
+        {
+            Debug.Log(rayHit.collider.name);
+
+            if(rayHit.collider.CompareTag("Enemy"))
             {
-                Debug.Log(hit.transform.name);
-
-                Target target = hit.transform.GetComponent<Target>();
-                if (target != null)
-                {
-                    target.TakeDamage(damage);
-                }
-
-                if (hit.rigidbody != null)
-                {
-                    hit.rigidbody.AddForce(-hit.normal * impactForce);
-                }
-
-                GameObject impactGO = Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal));
-                GameObject impactBloodGO = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
-                Destroy(impactGO, 2f);
-                Destroy(impactBloodGO, 0.25f);
+                rayHit.collider.GetComponent<Enemy>().TakeDamage(damage);
             }
         }
+
+        bulletsLeft--;
+        bulletsShot--;
+
+        Invoke("ResetShot", timeBetweenShooting);
+
+        if(bulletsShot > 0 && bulletsLeft > 0)
+        {
+            Invoke("Shoot", timeBetweenShots);
+        }
+
+        Text_AmmoCount.text = bulletsLeft + " / " + magazineSize;
+    }
+
+    private void ResetShot()
+    {
+        readyToShoot = true;
+    }
+    private void Reload()
+    {
+        reloading = true;
+        Text_Reloading.enabled = true;
+        Invoke("ReloadFinished", reloadTime);
+    }
+
+    private void ReloadFinished()
+    {
+        bulletsLeft = magazineSize;
+        reloading = false;
+        Text_Reloading.enabled = false;
+        Text_AmmoCount.text = bulletsLeft + " / " + magazineSize;
     }
 }
