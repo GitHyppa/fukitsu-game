@@ -4,50 +4,43 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
-    public GameObject player;
+    public CharacterController controller;
 
+    public float speed = 12f;
+    public float gravity = -9.81f;
+    public float jumpHeight = 3f;
 
-    float smooth = 5.0f;
-    float tiltAngle = 60.0f;
+    public Transform groundCheck;
+    public float groundDistance = 0.4f;
+    public LayerMask groundMask;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    Vector3 velocity;
+    bool isGrounded;
 
     // Update is called once per frame
     void Update()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        //Get the value of the Horizontal input axis.
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
-        float verticalInput = Input.GetAxis("Vertical");
-        //Get the value of the Vertical input axis.
-     
-        Move(player, horizontalInput, verticalInput);
-    }
-
-    void Move(GameObject player, float horizontalInput, float verticalInput)
-    {
-        if(Input.GetKey("d"))
+        if (isGrounded && velocity.y < 0)
         {
-            player.transform.position = new Vector3(player.transform.position.x + 0.05f, player.transform.position.y, player.transform.position.z);
+            velocity.y = -2f;
         }
 
-        if (Input.GetKey("a"))
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+
+        Vector3 move = transform.right * x + transform.forward * z;
+
+        controller.Move(move * speed * Time.deltaTime);
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
         {
-            player.transform.position = new Vector3(player.transform.position.x - 0.05f, player.transform.position.y, player.transform.position.z);
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
 
-        if (Input.GetKey("w"))
-        {
-            player.transform.position = new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.z + 0.05f);
-        }
+        velocity.y += gravity * Time.deltaTime;
 
-        if (Input.GetKey("s"))
-        {
-            player.transform.position = new Vector3(player.transform.position.x, player.transform.position.y, player.transform.position.z - 0.05f);
-        }
+        controller.Move(velocity * Time.deltaTime);
     }
 }

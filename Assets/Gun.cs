@@ -12,19 +12,23 @@ public class Gun : MonoBehaviour
     public float currentAmmo = 30f;
     float timeLeft = 2f;
 
+    public Canvas canvas;
     public Camera fpsCam;
     public ParticleSystem muzzleFlash;
     public GameObject impactEffect;
     public GameObject bloodEffect;
-    public Text ammoCount;
-    public Text reloading;
+    Text Text_AmmoCount;
+    Text Text_Reloading;
 
     private float NextTimeToFire = 0f;
 
     void Start()
     {
-        ammoCount.text = "30 / 30";
-        reloading.enabled = false;
+        Text_AmmoCount = canvas.GetComponent<UIController>().Text_AmmoCount;
+        Text_Reloading = canvas.GetComponent<UIController>().Text_Reloading;
+
+        Text_AmmoCount.text = "30 / 30";
+        Text_Reloading.enabled = false;
     }
 
     // Update is called once per frame
@@ -38,36 +42,35 @@ public class Gun : MonoBehaviour
 
         if(Input.GetKeyDown("r"))
         {
-            reloading.enabled = true;
+            Text_Reloading.enabled = true;
             timeLeft = 2f;
             Debug.Log("123");
         }
 
-        if(reloading.enabled)
+        if(Text_Reloading.enabled)
         {
             if (timeLeft < 0)
             {
-                reloading.enabled = false;  
+                Text_Reloading.enabled = false;  
                 currentAmmo = 30f;
-                ammoCount.text = currentAmmo + " / 30";
+                Text_Reloading.text = currentAmmo + " / 30";
             } 
             else
             {
                 timeLeft -= Time.deltaTime;
-
             }
         }
     }
 
     void Shoot()
     {
-        if(currentAmmo > 0)
+        if (currentAmmo > 0)
         {
             muzzleFlash.Play();
             RaycastHit hit;
 
             currentAmmo = currentAmmo - 1f;
-            ammoCount.text = currentAmmo + " / 30";
+            Text_AmmoCount.text = currentAmmo + " / 30";
 
             if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
             {

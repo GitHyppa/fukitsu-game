@@ -1,18 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-    // Start is called before the first frame update
+    public float screenWidth;
+    public float screenHeight;
+
+    public Text Text_AmmoCount;
+    public Text Text_Reloading;
+
     void Start()
     {
-        
-    }
+        screenWidth = Screen.width;
+        screenHeight = Screen.height;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Text_AmmoCount.transform.position = new Vector3(20, 20, 0);
     }
 }
