@@ -16,7 +16,6 @@ public class UIController : MonoBehaviour
         screenWidth = Screen.width;
         screenHeight = Screen.height;
 
-        Text_AmmoCount.transform.position = new Vector3(40, 20, 0);
         Text_Reloading.transform.position = new Vector3(Text_AmmoCount.transform.position.x + 90, 20, 0);
     }
 }
